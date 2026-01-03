@@ -67,6 +67,30 @@ export async function sendPostcard(postcardData) {
     // Log the params we'll send so you can inspect them in DevTools
     console.log('Sending EmailJS template params:', templateParams);
 
+    // Check approximate payload size to avoid EmailJS 413 (Payload Too Large)
+    const restBody = {
+      service_id: EMAILJS_CONFIG.serviceId,
+      template_id: EMAILJS_CONFIG.templateId,
+      user_id: EMAILJS_CONFIG.publicKey,
+      template_params: templateParams
+    };
+    let payloadSize = 0;
+    try {
+      payloadSize = new TextEncoder().encode(JSON.stringify(restBody)).length;
+    } catch (e) {
+      payloadSize = JSON.stringify(restBody).length;
+    }
+    // If payload is too large, abort early and return a helpful error
+    const MAX_PAYLOAD_BYTES = 150000; // conservative threshold (~150 KB)
+    if (payloadSize > MAX_PAYLOAD_BYTES) {
+      console.error('Email payload too large for EmailJS:', payloadSize);
+      return {
+        success: false,
+        error: 'Email payload too large (contains inline image data). Host images externally or shorten the postcard data before sending.',
+        payloadSize
+      };
+    }
+
     try {
       const response = await window.emailjs.send(
         EMAILJS_CONFIG.serviceId,

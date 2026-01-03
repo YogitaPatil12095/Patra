@@ -82,6 +82,39 @@ function PhotoUpload({ photo, onPhotoSelect }) {
         />
       </motion.div>
 
+      <div className="url-upload">
+        <label htmlFor="photoUrl" className="form-label">Or paste an image URL</label>
+        <div className="url-row">
+          <input
+            id="photoUrl"
+            type="url"
+            placeholder="https://example.com/photo.jpg"
+            className="form-input"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const url = e.target.value.trim();
+                if (url) {
+                  setPreview(url);
+                  onPhotoSelect(url);
+                }
+              }
+            }}
+          />
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => {
+              const input = document.getElementById('photoUrl');
+              const url = input && input.value && input.value.trim();
+              if (url) {
+                setPreview(url);
+                onPhotoSelect(url);
+              }
+            }}
+          >Use URL</button>
+        </div>
+      </div>
+
       <div className="sample-photos">
         <p className="samples-label">Or try a sample:</p>
         <div className="samples-grid">
